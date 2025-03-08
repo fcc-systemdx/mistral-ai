@@ -1,6 +1,5 @@
 # PDF to Markdown Conversion Sample Code (Mistral AI OCR API)
-
-PDFからMarkdownの変換サンプルコード（Mistral AI OCR API）
+# PDFからMarkdownの変換サンプルコード（Mistral AI OCR API）
 
 This project, named `mistral-ocr-pdf2markdown`, converts PDF documents into Markdown format by leveraging the Mistral OCR API. It extracts text and images from PDFs and generates a Markdown file with inline images. This tool requires a valid Mistral API key and Python 3 to run.
 
@@ -14,11 +13,12 @@ This project, named `mistral-ocr-pdf2markdown`, converts PDF documents into Mark
 
 - Python 3
 - [mistralai](https://pypi.org/project/mistralai/)
+- [python-dotenv](https://pypi.org/project/python-dotenv/)
 
-Install the required package:
+Install the required packages:
 
 ```bash
-pip install mistralai
+pip install mistralai python-dotenv
 ```
 
 ### Setup
@@ -30,24 +30,18 @@ pip install mistralai
    ```
    ├── ocr.py
    ├── README.md
-   └── (Optional: .env)  # Only if you use dotenv (not required in this setup)
+   └── .env
    ```
 
 2. **Environment Variable Setup**
 
-   Set your Mistral API key as an environment variable named `MISTRAL_API_KEY`.
+   Create a `.env` file in the project root with the following content:
 
-   For bash:
-
-   ```bash
-   export MISTRAL_API_KEY=your_actual_api_key_here
+   ```env
+   MISTRAL_API_KEY=your_actual_api_key_here
    ```
 
-   For Windows (Command Prompt):
-
-   ```bat
-   set MISTRAL_API_KEY=your_actual_api_key_here
-   ```
+   Alternatively, you can set the environment variable directly.
 
 ### Usage
 
@@ -65,7 +59,7 @@ python ocr.py --pdf /path/to/your/file.pdf --output /path/to/output_directory
 ```
 ├── ocr.py         # Main script for OCR processing
 ├── README.md      # This README file
-└── .env           # Environment variable file (contains MISTRAL_API_KEY; do not publish publicly)
+└── .env           # Environment variable file (contains MISTRAL_API_KEY)
 ```
 
 ### License
@@ -84,11 +78,12 @@ This tool uses the Mistral OCR API. Be aware of any rate limits or billing const
 
 - Python 3
 - [mistralai](https://pypi.org/project/mistralai/)
+- [python-dotenv](https://pypi.org/project/python-dotenv/)
 
 以下のコマンドで必要なパッケージをインストールします:
 
 ```bash
-pip install mistralai
+pip install mistralai python-dotenv
 ```
 
 ### セットアップ
@@ -100,24 +95,18 @@ pip install mistralai
    ```
    ├── ocr.py
    ├── README.md
-   └── (.env)  # dotenv を使用する場合のみ（本設定では不要）
+   └── .env
    ```
 
 2. **環境変数の設定**
 
-   Mistral APIキーを環境変数 `MISTRAL_API_KEY` に設定してください。
+   プロジェクトのルートディレクトリに `.env` ファイルを作成し、以下の内容を記述してください:
 
-   bashの場合:
-
-   ```bash
-   export MISTRAL_API_KEY=your_actual_api_key_here
+   ```env
+   MISTRAL_API_KEY=your_actual_api_key_here
    ```
 
-   Windowsの場合（コマンドプロンプト）:
-
-   ```bat
-   set MISTRAL_API_KEY=your_actual_api_key_here
-   ```
+   もしくは、環境変数を直接設定してください。
 
 ### 使い方
 
@@ -135,7 +124,7 @@ python ocr.py --pdf /path/to/your/file.pdf --output /path/to/output_directory
 ```
 ├── ocr.py         # OCR処理を行うメインスクリプト
 ├── README.md      # このREADMEファイル
-└── .env           # 環境変数ファイル
+└── .env           # 環境変数ファイル（MISTRAL_API_KEY を含む）
 ```
 
 ### ライセンス
