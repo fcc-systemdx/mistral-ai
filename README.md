@@ -1,5 +1,4 @@
-# PDF to Markdown Conversion Sample Code (Mistral AI OCR API)
-# PDFからMarkdownの変換サンプルコード（Mistral AI OCR API）
+# PDF to Markdown Conversion Code (Mistral AI OCR API)
 
 This project, named `mistral-ocr-pdf2markdown`, converts PDF documents into Markdown format by leveraging the Mistral OCR API. It extracts text and images from PDFs and generates a Markdown file with inline images. This tool requires a valid Mistral API key and Python 3 to run.
 
@@ -71,7 +70,7 @@ This project is licensed under the MIT License. Please adhere to the license ter
 This tool uses the Mistral OCR API. Be aware of any rate limits or billing constraints associated with the API. For more details, see the [Mistral API documentation](https://docs.mistral.ai/api/).
 
 ---
-
+# PDFからMarkdownの変換コード（Mistral AI OCR API）
 ## 日本語
 
 ### 必要条件
