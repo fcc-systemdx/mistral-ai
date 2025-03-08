@@ -1,0 +1,22 @@
+# Ignore output directories
+output*
+
+# Ignore PDF directories or files
+pdf*
+
+# Ignore environment variable files
+.env
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+ENV/
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
