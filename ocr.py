@@ -76,7 +76,6 @@ def process_ocr(client: Mistral, pdf_path: Path, output_dir: Path) -> Path:
     )
     logging.info("OCRが完了しました。")
 
-
     response_output_path = output_dir / "ocr_response.json"
     # OCRレスポンスをJSONファイルに保存
     write_json_file(ocr_response.model_dump(), response_output_path)
