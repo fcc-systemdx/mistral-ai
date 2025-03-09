@@ -65,6 +65,7 @@ def process_ocr(client: Mistral, pdf_path: Path, output_dir: Path) -> Path:
     and return the path to the JSON response file.
     """
     uploaded_pdf = upload_pdf(client, pdf_path)
+    # 署名付きURLを取得
     signed_url = client.files.get_signed_url(file_id=uploaded_pdf.id)
     ocr_response = client.ocr.process(
         model="mistral-ocr-latest",
@@ -73,9 +74,11 @@ def process_ocr(client: Mistral, pdf_path: Path, output_dir: Path) -> Path:
     )
 
     response_output_path = output_dir / "ocr_response.json"
+    # OCRレスポンスをJSONファイルに保存
     write_json_file(ocr_response.model_dump(), response_output_path)
     logging.info(f"OCRレスポンスを {response_output_path} に保存しました。")
 
+    # OCR結果をテキストファイルに保存
     ocr_text = "\n\n".join(page.markdown for page in ocr_response.pages) if ocr_response.pages else ""
     output_txt_path = output_dir / "output.txt"
     write_text_file(ocr_text, output_txt_path)
