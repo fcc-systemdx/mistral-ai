@@ -25,7 +25,7 @@ def write_text_file(text: str, file_path: Path) -> None:
 
 def load_api_key() -> str:
     """Load API key from .env file."""
-    load_dotenv()
+    load_dotenv(override=True)
     api_key = os.getenv('MISTRAL_API_KEY')
     if not api_key:
         raise ValueError('MISTRAL_API_KEYが設定されていません')
@@ -67,11 +67,15 @@ def process_ocr(client: Mistral, pdf_path: Path, output_dir: Path) -> Path:
     uploaded_pdf = upload_pdf(client, pdf_path)
     # 署名付きURLを取得
     signed_url = client.files.get_signed_url(file_id=uploaded_pdf.id)
+
+    logging.info("OCRを実行しています...")
     ocr_response = client.ocr.process(
         model="mistral-ocr-latest",
         document={"type": "document_url", "document_url": signed_url.url},
         include_image_base64=True
     )
+    logging.info("OCRが完了しました。")
+
 
     response_output_path = output_dir / "ocr_response.json"
     # OCRレスポンスをJSONファイルに保存
