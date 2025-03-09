@@ -65,7 +65,7 @@ def process_ocr(client: Mistral, pdf_path: Path, output_dir: Path) -> Path:
     and return the path to the JSON response file.
     """
     uploaded_pdf = upload_pdf(client, pdf_path)
-    # 署名付きURLを取得
+    # Get a signed URL
     signed_url = client.files.get_signed_url(file_id=uploaded_pdf.id)
 
     logging.info("Running OCR...")
