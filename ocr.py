@@ -28,7 +28,7 @@ def load_api_key() -> str:
     load_dotenv(override=True)
     api_key = os.getenv('MISTRAL_API_KEY')
     if not api_key:
-        raise ValueError('MISTRAL_API_KEYが設定されていません')
+        raise ValueError('MISTRAL_API_KEY environment variable not set.')
     return api_key
 
 
@@ -50,7 +50,7 @@ def upload_pdf(client: Mistral, pdf_path: Path):
     Raises FileNotFoundError if the PDF file does not exist.
     """
     if not pdf_path.exists():
-        raise FileNotFoundError(f'指定されたPDFファイルが見つかりません: {pdf_path}')
+        raise FileNotFoundError(f'PDF file not found: {pdf_path}')
     with pdf_path.open('rb') as file:
         uploaded_pdf = client.files.upload(
             file={"file_name": pdf_path.name, "content": file.read()},
@@ -68,24 +68,24 @@ def process_ocr(client: Mistral, pdf_path: Path, output_dir: Path) -> Path:
     # 署名付きURLを取得
     signed_url = client.files.get_signed_url(file_id=uploaded_pdf.id)
 
-    logging.info("OCRを実行しています...")
+    logging.info("Running OCR...")
     ocr_response = client.ocr.process(
         model="mistral-ocr-latest",
         document={"type": "document_url", "document_url": signed_url.url},
         include_image_base64=True
     )
-    logging.info("OCRが完了しました。")
+    logging.info("OCR completed.")
 
     response_output_path = output_dir / "ocr_response.json"
-    # OCRレスポンスをJSONファイルに保存
+    # Save OCR response to a json file
     write_json_file(ocr_response.model_dump(), response_output_path)
-    logging.info(f"OCRレスポンスを {response_output_path} に保存しました。")
+    logging.info(f"OCR response saved to {response_output_path}")
 
-    # OCR結果をテキストファイルに保存
+    # Save OCR results to a text file
     ocr_text = "\n\n".join(page.markdown for page in ocr_response.pages) if ocr_response.pages else ""
     output_txt_path = output_dir / "output.txt"
     write_text_file(ocr_text, output_txt_path)
-    logging.info(f"OCR結果を {output_txt_path} に保存しました。")
+    logging.info(f"OCR results saved to {output_txt_path}")
 
     return response_output_path
 
@@ -136,7 +136,7 @@ def json_to_markdown(json_file: Path, output_md: Path) -> None:
                 md += f"\n![{img_id}]({data_uri})\n"
         markdown_lines.append(md)
     write_text_file("\n\n".join(markdown_lines), output_md)
-    logging.info(f"Markdownファイルを {output_md} に保存しました。")
+    logging.info(f"Markdown file saved to {output_md}")
 
 
 def main():
@@ -163,14 +163,14 @@ def main():
     try:
         response_output_path = process_ocr(client, pdf_path, output_dir)
     except Exception as e:
-        logging.error(f"OCR処理中にエラーが発生しました: {e}")
+        logging.error(f"Error during OCR processing: {e}")
         sys.exit(1)
 
     output_md_path = output_dir / 'output.md'
     try:
         json_to_markdown(response_output_path, output_md_path)
     except Exception as e:
-        logging.error(f"Markdown変換中にエラーが発生しました: {e}")
+        logging.error(f"Error during converting JSON to Markdown: {e}")
         sys.exit(1)
 
 
