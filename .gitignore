@@ -21,4 +21,6 @@ ENV/
 # Windows system files
 Thumbs.db
 
-sample.pdf
+*.pdf
+mistral_ocr_tool.egg-info/
+.vend/
