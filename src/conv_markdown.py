@@ -67,7 +67,12 @@ def split_markdown_by_h1(content: str) -> list[tuple[str, str]]:
 def add_related_files_context(section_title: str, all_sections: list[tuple[str, str]], section_index: int, doc_title: str) -> str:
     """
     関連ファイル情報を含むコンテキストを生成します。
+    出力ファイル名（.mdを除く）を使用します。
     """
+    # ファイル名を生成する関数
+    def get_filename(doc_title, section_title):
+        return f"{sanitize_filename(doc_title)}_{sanitize_filename(section_title)}"
+    
     related_info = [
         "# 関連ファイル",
         f"- タイトル: {doc_title}"
@@ -76,12 +81,14 @@ def add_related_files_context(section_title: str, all_sections: list[tuple[str, 
     # 前の4つのセクションを追加（存在する場合）
     for i in range(max(0, section_index - 4), section_index):
         prev_title = all_sections[i][0]
-        related_info.append(f"- {4 - (section_index - i)}つ前に出力したファイル: {prev_title}")
+        prev_filename = get_filename(doc_title, prev_title)
+        related_info.append(f"- {4 - (section_index - i)}つ前に出力したファイル: {prev_filename}")
     
     # 次のセクションを追加（存在する場合）
     if section_index + 1 < len(all_sections):
         next_title = all_sections[section_index + 1][0]
-        related_info.append(f"- 次に出力するファイル: {next_title}")
+        next_filename = get_filename(doc_title, next_title)
+        related_info.append(f"- 次に出力するファイル: {next_filename}")
     
     return "\n".join(related_info)
 
