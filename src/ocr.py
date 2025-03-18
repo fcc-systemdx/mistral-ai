@@ -68,22 +68,26 @@ def process_ocr(client: Mistral, pdf_path: Path, output_dir: Path) -> Path:
     # Get a signed URL
     signed_url = client.files.get_signed_url(file_id=uploaded_pdf.id)
 
-    logging.info("Running OCR...")
+    logging.info(f"Running OCR for {pdf_path.name}...")
     ocr_response = client.ocr.process(
         model="mistral-ocr-latest",
         document={"type": "document_url", "document_url": signed_url.url},
         include_image_base64=True
     )
-    logging.info("OCR completed.")
+    logging.info(f"OCR completed for {pdf_path.name}.")
 
-    response_output_path = output_dir / "ocr_response.json"
+    # Create a subfolder for this PDF file's output
+    pdf_output_dir = output_dir / pdf_path.stem
+    pdf_output_dir.mkdir(parents=True, exist_ok=True)
+
+    response_output_path = pdf_output_dir / "ocr_response.json"
     # Save OCR response to a json file
     write_json_file(ocr_response.model_dump(), response_output_path)
     logging.info(f"OCR response saved to {response_output_path}")
 
     # Save OCR results to a text file
     ocr_text = "\n\n".join(page.markdown for page in ocr_response.pages) if ocr_response.pages else ""
-    output_txt_path = output_dir / "output.txt"
+    output_txt_path = pdf_output_dir / f"{pdf_path.stem}.txt"
     write_text_file(ocr_text, output_txt_path)
     logging.info(f"OCR results saved to {output_txt_path}")
 
@@ -139,18 +143,10 @@ def json_to_markdown(json_file: Path, output_md: Path) -> None:
     logging.info(f"Markdown file saved to {output_md}")
 
 
-def main():
-    parser = argparse.ArgumentParser(description='OCR tool using Mistral OCR API')
-    parser.add_argument('-p', '--pdf', type=Path, required=True, help='Path to the PDF file to process')
-    parser.add_argument('-o', '--output', type=Path, required=True, help='Base directory for output files')
-    args = parser.parse_args()
-
-    pdf_path: Path = args.pdf
-    output_base: Path = args.output
-
-    logging.info(f'Using PDF file: {pdf_path}')
-    logging.info(f'Output base directory: {output_base}')
-
+def process_pdf_files(in_dir: Path, out_dir: Path) -> None:
+    """
+    Process all PDF files in the input directory and save results to the output directory.
+    """
     try:
         api_key = load_api_key()
     except ValueError as e:
@@ -158,20 +154,54 @@ def main():
         sys.exit(1)
 
     client = Mistral(api_key=api_key)
-    output_dir = create_output_directory(output_base)
+    
+    # Create a timestamped output directory
+    timestamp_dir = create_output_directory(out_dir)
+    logging.info(f"Created output directory: {timestamp_dir}")
+    
+    # Get all PDF files in the input directory
+    pdf_files = list(in_dir.glob("*.pdf"))
+    if not pdf_files:
+        logging.warning(f"No PDF files found in {in_dir}")
+        return
+    
+    logging.info(f"Found {len(pdf_files)} PDF files to process")
+    
+    # Process each PDF file
+    for pdf_path in pdf_files:
+        logging.info(f"Processing {pdf_path.name}...")
+        try:
+            response_output_path = process_ocr(client, pdf_path, timestamp_dir)
+            output_md_path = timestamp_dir / pdf_path.stem / f"{pdf_path.stem}.md"
+            json_to_markdown(response_output_path, output_md_path)
+            logging.info(f"Successfully processed {pdf_path.name}")
+        except Exception as e:
+            logging.error(f"Error processing {pdf_path.name}: {e}")
+            continue
 
-    try:
-        response_output_path = process_ocr(client, pdf_path, output_dir)
-    except Exception as e:
-        logging.error(f"Error during OCR processing: {e}")
-        sys.exit(1)
 
-    output_md_path = output_dir / 'output.md'
-    try:
-        json_to_markdown(response_output_path, output_md_path)
-    except Exception as e:
-        logging.error(f"Error during converting JSON to Markdown: {e}")
+def main():
+    parser = argparse.ArgumentParser(description='OCR tool using Mistral OCR API')
+    parser.add_argument('-i', '--input_dir', type=Path, default=Path('in_pdfs'), 
+                        help='Directory containing PDF files to process (default: in_pdfs)')
+    parser.add_argument('-o', '--output_dir', type=Path, default=Path('out'), 
+                        help='Base directory for output files (default: out)')
+    args = parser.parse_args()
+
+    in_dir: Path = args.input_dir
+    out_dir: Path = args.output_dir
+
+    # Ensure directories exist
+    if not in_dir.exists():
+        logging.error(f"Input directory does not exist: {in_dir}")
         sys.exit(1)
+    
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    logging.info(f'Input directory: {in_dir}')
+    logging.info(f'Output directory: {out_dir}')
+
+    process_pdf_files(in_dir, out_dir)
 
 
 if __name__ == '__main__':

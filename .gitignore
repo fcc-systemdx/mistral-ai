@@ -24,3 +24,5 @@ Thumbs.db
 *.pdf
 mistral_ocr_tool.egg-info/
 .vend/
+
+*.md
