@@ -12,6 +12,7 @@ from typing import List, Dict, Any
 from dotenv import load_dotenv
 from pinecone import Pinecone
 from openai import OpenAI
+import anthropic
 
 # ログの設定
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -23,6 +24,7 @@ load_dotenv()
 # 環境変数からAPIキーを取得
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 # Pineconeの設定
 DEFAULT_INDEX_NAME = "markdown-knowledge"
@@ -312,8 +314,8 @@ def generate_answer_with_retry(query: str, documents: List[Dict[str, Any]]) -> s
     
     while retry_count < MAX_RETRIES:
         try:
-            # OpenAIクライアントの初期化
-            client = OpenAI(api_key=OPENAI_API_KEY)
+            # Anthropicクライアントの初期化
+            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
             
             # プロンプトを作成
             prompt = f"""
@@ -329,18 +331,17 @@ def generate_answer_with_retry(query: str, documents: List[Dict[str, Any]]) -> s
 回答:
 """
             
-            # ChatGPTで回答を生成
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+            # Claude Sonnet 3.7で回答を生成
+            response = client.messages.create(
+                model="claude-3-7-sonnet-20250219",
                 messages=[
-                    {"role": "system", "content": "あなたは質問に対して、提供されたコンテキストのみに基づいて回答する優秀なアシスタントです。"},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.3,
                 max_tokens=1000
             )
             
-            return response.choices[0].message.content
+            return response.content[0].text
         
         except Exception as e:
             # レート制限エラーの検出（エラーメッセージやステータスコードで判断）
@@ -466,6 +467,10 @@ def main():
     
     if not OPENAI_API_KEY:
         logger.error("OPENAI_API_KEYが環境変数に設定されていません。")
+        sys.exit(1)
+    
+    if not ANTHROPIC_API_KEY:
+        logger.error("ANTHROPIC_API_KEYが環境変数に設定されていません。")
         sys.exit(1)
     
     # インデックスが存在するか確認
